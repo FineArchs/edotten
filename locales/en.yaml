@@ -1,0 +1,21 @@
+header:
+  settings: "Settings"
+
+tools:
+  title: "Tools"
+  pen: "Pen"
+  eraser: "Eraser"
+
+settings:
+  title: "Settings"
+  canvasSize: "Canvas Size"
+  pixelSize: "Pixel (Grid) Size"
+  gridColor: "Grid Color"
+  bgColor: "Background Color"
+  shortcuts:
+    title: "Shortcuts"
+    pen: "Pen Tool"
+    eraser: "Eraser Tool"
+    openSettings: "Open Settings"
+    close: "Close/Escape"
+  apply: "Apply & Reset Canvas"

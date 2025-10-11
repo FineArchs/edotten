@@ -1,0 +1,21 @@
+header:
+  settings: "設定"
+
+tools:
+  title: "ツール"
+  pen: "ペン"
+  eraser: "消しゴム"
+
+settings:
+  title: "設定"
+  canvasSize: "キャンバスサイズ"
+  pixelSize: "ピクセル（グリッド）サイズ"
+  gridColor: "グリッドの色"
+  bgColor: "背景色"
+  shortcuts:
+    title: "ショートカット"
+    pen: "ペンツール"
+    eraser: "消しゴムツール"
+    openSettings: "設定を開く"
+    close: "閉じる/Escape"
+  apply: "適用してキャンバスをリセット"

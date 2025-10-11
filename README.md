@@ -1,36 +1,263 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+---
 
-## Getting Started
+# 🎨 ドット絵エディター 仕様書（v1.2 完全版）
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 1. プロジェクト概要
+
+### 名称
+
+**Edotten（仮称）**
+
+### 目的
+
+ブラウザ上で動作し、ガイド画像を活用したドット絵制作とGIFアニメーション出力を可能にするツールを開発する。
+ユーザーが複数のプロジェクトを管理できることを目指す。
+
+### 想定ユーザー
+
+* ゲーム制作用のスプライトを描く個人制作者
+* ドット絵練習を行うアーティスト
+* 手軽にGIFアニメを作成したいユーザー
+
+### 開発条件
+
+| 項目      | 内容                                      |
+| ------- | --------------------------------------- |
+| 開発人数    | 1名                                      |
+| 使用技術    | React（Next.js）, TypeScript, TailwindCSS |
+| 対応ブラウザ  | 最新版 Chrome / Edge / Firefox             |
+| 使用補助ツール | ChatGPT（無料版）, Gemini CLI（無料枠）           |
+| 開発期間    | 約10〜11週間（個人開発想定）                        |
+| サーバー    | 不要（完全クライアントサイド動作）                       |
+
+---
+
+## 2. 全体構成概要
+
+```
+PixelStage
+├── プロジェクト管理
+│   ├── 新規作成・保存・読込・削除・エクスポート
+│   └── localStorage＋JSONファイル対応
+├── エディター画面
+│   ├── メインキャンバス（ドット描画）
+│   ├── ガイド画像表示（拡縮・透明度・前後）
+│   ├── フレーム管理（アニメーション）
+│   └── カラーパレット
+└── 出力機能
+    ├── GIFアニメーション
+    └── PNG静止画
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 3. 機能仕様
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3.1 プロジェクト管理機能
 
-## Learn More
+| 機能名        | 説明                              | 優先度   |
+| ---------- | ------------------------------- | ----- |
+| 新規プロジェクト作成 | 新しい空のキャンバスを生成                   | ★★★★★ |
+| 保存         | 現在の全データをlocalStorageに保存（JSON形式） | ★★★★★ |
+| 読み込み       | 保存済みプロジェクトの選択・復元                | ★★★★★ |
+| 削除         | 保存済みプロジェクトを削除                   | ★★★☆☆ |
+| 名前変更       | プロジェクト名を編集                      | ★★★☆☆ |
+| 自動保存       | 一定間隔／操作後に自動保存                   | ★★★★☆ |
+| JSON書き出し   | JSONファイルとして保存                   | ★★★☆☆ |
+| JSON読み込み   | 外部ファイルから読み込み                    | ★★★★☆ |
 
-To learn more about Next.js, take a look at the following resources:
+**保存データ構造（例）**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```json
+{
+  "schemaVersion": 1,
+  "name": "my_character",
+  "createdAt": "2025-10-11T08:00:00Z",
+  "updatedAt": "2025-10-11T08:30:00Z",
+  "canvas": { "width": 128, "height": 128 },
+  "frames": [{ "pixels": "data:image/png;base64,...", "duration": 120 }],
+  "palette": ["#000000", "#FFFFFF", "#FF0000"],
+  "guides": [
+    { "src": "data:image/png;base64,...", "x": 0, "y": 0, "scale": 1.0, "opacity": 0.5, "layer": "back" }
+  ],
+  "settings": { "zoom": 8, "gridVisible": true }
+}
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+### 3.2 ドット描画機能
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| 機能名         | 説明              | 優先度   |
+| ----------- | --------------- | ----- |
+| ピクセル単位描画    | マウスクリック／ドラッグで描画 | ★★★★★ |
+| 消しゴムツール     | 背景または透明色で塗る     | ★★★★☆ |
+| ズーム         | 拡大・縮小（倍率制御）     | ★★★★☆ |
+| Undo / Redo | 操作履歴の前後移動       | ★★★★☆ |
+| グリッド表示      | 1ピクセル境界線を表示     | ★★★☆☆ |
+| カーソル座標表示    | 下部ステータスバーで座標を表示 | ★★★☆☆ |
+| 透明背景        | チェッカー柄表示        | ★★★☆☆ |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+### 3.3 ガイド画像機能
+
+| 機能名    | 説明                   | 優先度   |
+| ------ | -------------------- | ----- |
+| 画像読み込み | PNG/JPEG/WebPをアップロード | ★★★★★ |
+| 複数配置   | 複数枚のガイド画像を同時に表示      | ★★★★★ |
+| 拡縮     | マウスホイールやスライダーでサイズ調整  | ★★★★☆ |
+| 移動     | ドラッグで位置を変更           | ★★★★☆ |
+| 前後切替   | 「ガイドを前」「ドットを前」切替     | ★★★★☆ |
+| 透明度調整  | スライダーでα値制御           | ★★★★☆ |
+| 削除     | 個別削除                 | ★★★☆☆ |
+
+---
+
+### 3.4 フレーム（アニメーション）機能
+
+| 機能名       | 説明                  | 優先度   |
+| --------- | ------------------- | ----- |
+| フレーム追加・削除 | 新しいフレームを生成／削除       | ★★★★★ |
+| 複製        | 現在のフレームをコピー         | ★★★★☆ |
+| 並べ替え      | フレーム順序をドラッグで変更      | ★★★★☆ |
+| 再生        | アニメーションプレビュー（速度調整可） | ★★★★☆ |
+| 再生速度設定    | フレームごと／全体の間隔設定      | ★★★★☆ |
+
+---
+
+### 3.5 出力機能
+
+| 機能名   | 説明                | 優先度   |
+| ----- | ----------------- | ----- |
+| GIF出力 | 全フレームを結合しアニメGIF生成 | ★★★★★ |
+| PNG出力 | 現在のフレームを画像保存      | ★★★★☆ |
+| 背景透過  | 透過PNG / GIF対応     | ★★★☆☆ |
+
+---
+
+### 3.6 カラーパレット機能
+
+| 機能名    | 説明                | 優先度   |
+| ------ | ----------------- | ----- |
+| 登録     | 任意の色を追加           | ★★★★★ |
+| 削除     | 登録色を削除            | ★★★★☆ |
+| 選択     | カラーピッカーまたはクリックで選択 | ★★★★★ |
+| 並び替え   | ドラッグで並べ替え         | ★★★☆☆ |
+| スポイト   | クリックでキャンバス上の色取得   | ★★★★☆ |
+| パレット保存 | プロジェクトに含まれる       | ★★★★★ |
+
+---
+
+## 4. 非機能要件
+
+| 区分          | 内容                             |
+| ----------- | ------------------------------ |
+| **パフォーマンス** | 64×64〜512×512程度のキャンバスで滑らかに操作可能 |
+| **データ保存**   | localStorage使用（上限約5MB）         |
+| **セキュリティ**  | ファイルはすべてクライアント内で処理             |
+| **UI応答性**   | 操作の遅延100ms未満を目標                |
+| **国際化**     | 初期段階では日本語UIのみ                  |
+| **レスポンシブ**  | PC向け（モバイル対応は将来拡張）              |
+
+---
+
+## 5. 技術設計方針
+
+| 項目            | 内容                                  |
+| ------------- | ----------------------------------- |
+| **UIフレームワーク** | Next.js（CSR構成） + TailwindCSS        |
+| **状態管理**      | React Hooks + useReducer（Redux未使用）  |
+| **描画処理**      | HTML5 Canvas API（2Dコンテキスト）          |
+| **GIF生成**     | gif.js もしくは gifencoder + Web Worker |
+| **データ構造**     | フレームごとに画像Base64を保持、まとめてJSON化        |
+| **保存形式**      | localStorage または JSONファイル           |
+| **型安全性**      | TypeScriptによる明示的な型定義                |
+| **ビルド**       | Vercel対応（Next.js標準構成）               |
+
+---
+
+## 6. UI構成
+
+### 6.1 画面レイアウト
+
+```
+┌─────────────────────────────┐
+│ [メニューバー] ファイル 編集 表示 ガイド 出力 │
+├─────────────────────────────┤
+│ [ツールバー] 🖌 色 🎨 パレット 🧩 ガイド ⚙ 設定 │
+├────────────┬────────────────┤
+│ [フレームリスト] │ [メインキャンバス]                 │
+│  □ frame1        │   (Canvas + Guide重ね合わせ)     │
+│  □ frame2        │                                    │
+│  ＋追加           │                                    │
+├────────────┴────────────────┤
+│ [ステータスバー] カラー: #FFAA00 | 座標: (12, 8) │
+└─────────────────────────────┘
+```
+
+### 6.2 プロジェクト管理ダイアログ
+
+* 一覧形式で表示（サムネイル＋名称＋更新日時）
+* ボタン：新規／読み込み／削除／エクスポート／インポート
+
+---
+
+## 7. スケジュール（目安）
+
+| フェーズ         | 内容                                     | 期間 |
+| ------------ | -------------------------------------- | -- |
+| ① 環境構築       | Next.js + Tailwind + TypeScript セットアップ | 1週 |
+| ② 基本描画機能     | ピクセル描画・パレット・Undo/Redo                  | 2週 |
+| ③ ガイド機能      | 画像配置・透明度・前後制御                          | 2週 |
+| ④ フレーム機能     | フレーム追加・再生・削除                           | 1週 |
+| ⑤ プロジェクト保存機能 | localStorage保存・読込・JSON出力               | 1週 |
+| ⑥ GIF出力      | アニメーション生成・ダウンロード                       | 1週 |
+| ⑦ UI整備・最適化   | レイアウト・操作性改善                            | 1週 |
+| ⑧ テスト・調整     | パフォーマンス調整・バグ修正                         | 1週 |
+
+**合計：10〜11週間**
+
+---
+
+## 8. リスクと対策
+
+| リスク                 | 対策                           |
+| ------------------- | ---------------------------- |
+| GIF生成で処理が重くなる       | Worker化しUIスレッドを分離            |
+| localStorage上限（5MB） | Base64圧縮（LZ-stringなど）を検討     |
+| JSON破損・互換性          | `schemaVersion`フィールドでバージョン管理 |
+| 無料AIツールの制限          | ChatGPT/Geminiには短文で段階的質問を行う  |
+
+---
+
+## 9. 成果物
+
+| 種別     | 内容                                          |
+| ------ | ------------------------------------------- |
+| Webアプリ | Next.js製ドット絵エディター（ブラウザ実行）                   |
+| 出力形式   | GIFアニメーション / PNG画像 / JSONプロジェクトファイル         |
+| ソース構成  | `/pages`, `/components`, `/hooks`, `/utils` |
+| データ保存  | localStorage + ダウンロード可能JSON                 |
+
+---
+
+## 10. 今後の拡張予定（スコープ外）
+
+* Onion Skin（前後フレーム透かし表示）
+* PSD/ASEファイル対応
+* クラウド保存・共有機能
+* スマホ／タブレット対応UI
+* カスタムブラシ機能
+
+---
+
+## 11. まとめ
+
+本仕様書は、**一人開発者がChatGPTやGeminiを補助ツールとして活用しながら実現可能なブラウザドット絵エディター**を想定して策定したものである。
+Next.js + Canvasの構成により、サーバーレス・軽量・高速な描画体験を実現し、
+ガイド画像・アニメーション・プロジェクト保存をすべてブラウザ内で完結させることを目的とする。
+
+---
