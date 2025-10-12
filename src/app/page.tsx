@@ -1,36 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Canvas from '@/components/Canvas';
 import ColorPalette from '@/components/ColorPalette';
-import Settings, { CanvasSettings } from '@/components/Settings';
+import Settings from '@/components/Settings';
 import Header from '@/components/Header';
 import Modal from '@/components/Modal';
 import ToolSelector, { Tool } from '@/components/ToolSelector';
 import { useKeyPress } from '@/hooks/useKeyPress';
+import { useSettings } from '@/context/SettingsContext';
 
 export default function Home() {
   const [color, setColor] = useState('#000000');
   const [tool, setTool] = useState<Tool>('pen');
   const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [settings, setSettings] = useState<CanvasSettings>({
-    width: 512,
-    height: 512,
-    pixelSize: 16,
-    gridColor: '#F0F0F0',
-    bgColor: '#FFFFFF',
-    shortcuts: {
-      pen: 'p',
-      eraser: 'e',
-      settings: ',',
-      close: 'Escape',
-    },
-  });
-
-  const handleSettingsChange = (newSettings: CanvasSettings) => {
-    setSettings(newSettings);
-    setSettingsOpen(false); // Close modal on apply
-  };
+  const { settings, setSettings } = useSettings(); // Get from context
 
   // Setup shortcuts using the custom hook
   useKeyPress(settings.shortcuts.pen, () => setTool('pen'), !isSettingsOpen);
@@ -59,7 +43,7 @@ export default function Home() {
       </main>
 
       <Modal isOpen={isSettingsOpen} onClose={() => setSettingsOpen(false)}>
-        <Settings initialSettings={settings} onSettingsChange={handleSettingsChange} />
+        <Settings /> {/* No props needed here */}
       </Modal>
     </div>
   );

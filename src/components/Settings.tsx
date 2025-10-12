@@ -1,34 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSettings } from '@/context/SettingsContext';
+import type { CanvasSettings } from '@/context/SettingsContext';
 
-export interface CanvasSettings {
-  width: number;
-  height: number;
-  pixelSize: number;
-  gridColor: string;
-  bgColor: string;
-  shortcuts: {
-    pen: string | null;
-    eraser: string | null;
-    settings: string | null;
-    close: string | null;
-  };
-}
-
-interface SettingsProps {
-  initialSettings: CanvasSettings;
-  onSettingsChange: (newSettings: CanvasSettings) => void;
-}
-
-const Settings = ({ initialSettings, onSettingsChange }: SettingsProps) => {
+const Settings = () => {
   const { t } = useLanguage();
-  const [settings, setSettings] = useState<CanvasSettings>(initialSettings);
-
-  useEffect(() => {
-    setSettings(initialSettings);
-  }, [initialSettings]);
+  const { settings, setSettings } = useSettings();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -60,10 +38,6 @@ const Settings = ({ initialSettings, onSettingsChange }: SettingsProps) => {
         [name]: null,
       }
     }));
-  };
-
-  const handleApply = () => {
-    onSettingsChange(settings);
   };
 
   return (
@@ -216,13 +190,6 @@ const Settings = ({ initialSettings, onSettingsChange }: SettingsProps) => {
           </div>
         </div>
       </div>
-
-      <button
-        onClick={handleApply}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white font-semibold rounded-md hover:bg-blue-600"
-      >
-        {t('settings.apply')}
-      </button>
     </div>
   );
 };
