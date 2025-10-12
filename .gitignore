@@ -42,3 +42,5 @@ next-env.d.ts
 
 # generated files
 /public/locales
+**.autogen.ts
+**.autogen.d.ts

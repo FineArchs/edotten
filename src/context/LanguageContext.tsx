@@ -1,5 +1,3 @@
-'use client';
-
 import {
   createContext,
   type ReactNode,
@@ -8,33 +6,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-
-// Type for the translation object
-interface Translations {
-  header: {
-    settings: string;
-  };
-  tools: {
-    title: string;
-    pen: string;
-    eraser: string;
-  };
-  settings: {
-    title: string;
-    canvasSize: string;
-    pixelSize: string;
-    gridColor: string;
-    bgColor: string;
-    shortcuts: {
-      title: string;
-      pen: string;
-      eraser: string;
-      openSettings: string;
-      close: string;
-    };
-    apply: string;
-  };
-}
+import type { Translations } from '@/types/translations-def.autogen.d';
 
 type DotPrefix<T extends string> = T extends '' ? '' : `.${T}`;
 
