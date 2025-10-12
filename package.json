@@ -7,7 +7,7 @@
     "dev": "pnpm run compile:locales && next dev --turbopack",
     "build": "pnpm run compile:locales && next build --turbopack",
     "start": "next start",
-    "lint": "biome check --apply",
+    "lint": "biome check",
     "format": "biome format --write"
   },
   "dependencies": {

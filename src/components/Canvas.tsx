@@ -1,7 +1,7 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
-import { Tool } from './ToolSelector';
+import { useEffect, useRef, useState } from 'react';
+import type { Tool } from './ToolSelector';
 
 interface CanvasProps {
   color: string;
@@ -18,7 +18,7 @@ const drawGrid = (
   width: number,
   height: number,
   pixelSize: number,
-  gridColor: string
+  gridColor: string,
 ) => {
   ctx.strokeStyle = gridColor;
   ctx.lineWidth = 0.5;
@@ -38,7 +38,15 @@ const drawGrid = (
   }
 };
 
-const Canvas = ({ color, width, height, pixelSize, gridColor, bgColor, tool }: CanvasProps) => {
+const Canvas = ({
+  color,
+  width,
+  height,
+  pixelSize,
+  gridColor,
+  bgColor,
+  tool,
+}: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
@@ -76,12 +84,21 @@ const Canvas = ({ color, width, height, pixelSize, gridColor, bgColor, tool }: C
     const gridX = Math.floor(event.nativeEvent.offsetX / pixelSize);
     const gridY = Math.floor(event.nativeEvent.offsetY / pixelSize);
 
-    if (lastPixel.current && lastPixel.current.x === gridX && lastPixel.current.y === gridY) {
+    if (
+      lastPixel.current &&
+      lastPixel.current.x === gridX &&
+      lastPixel.current.y === gridY
+    ) {
       return;
     }
 
     // The fillStyle is already set by the useEffect hook
-    context.fillRect(gridX * pixelSize, gridY * pixelSize, pixelSize, pixelSize);
+    context.fillRect(
+      gridX * pixelSize,
+      gridY * pixelSize,
+      pixelSize,
+      pixelSize,
+    );
     lastPixel.current = { x: gridX, y: gridY };
   };
 

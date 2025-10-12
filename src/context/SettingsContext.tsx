@@ -1,6 +1,13 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
+import {
+  createContext,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+  useContext,
+  useState,
+} from 'react';
 
 // Centralized type definition for canvas settings
 export interface CanvasSettings {
@@ -24,7 +31,9 @@ interface SettingsContextType {
 }
 
 // Create the context
-const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+const SettingsContext = createContext<SettingsContextType | undefined>(
+  undefined,
+);
 
 // Initial default settings
 const initialSettings: CanvasSettings = {

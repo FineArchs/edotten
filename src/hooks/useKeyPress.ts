@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 export const useKeyPress = (
   targetKey: string | null,
   callback: () => void,
-  enabled: boolean = true
+  enabled: boolean = true,
 ) => {
   useEffect(() => {
     if (!enabled || !targetKey) {
@@ -14,10 +14,14 @@ export const useKeyPress = (
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Ignore if user is typing in an input, unless the key is Escape
-      if (targetKey !== 'Escape' && (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)) {
+      if (
+        targetKey !== 'Escape' &&
+        (event.target instanceof HTMLInputElement ||
+          event.target instanceof HTMLTextAreaElement)
+      ) {
         return;
       }
-      
+
       if (event.key === targetKey) {
         event.preventDefault();
         callback();

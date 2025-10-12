@@ -6,9 +6,7 @@ import { SettingsProvider } from '@/context/SettingsContext';
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SettingsProvider>
-      <LanguageProvider>
-        {children}
-      </LanguageProvider>
+      <LanguageProvider>{children}</LanguageProvider>
     </SettingsProvider>
   );
 }

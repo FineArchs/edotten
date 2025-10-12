@@ -16,6 +16,7 @@ const Header = ({ onSettingsClick }: HeaderProps) => {
       <div className="flex items-center gap-4">
         <LanguageSwitcher />
         <button
+          type="button"
           onClick={onSettingsClick}
           className="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300"
         >

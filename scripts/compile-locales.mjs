@@ -1,5 +1,5 @@
-import { readdir, readFile, writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import yaml from 'js-yaml';
 
 const localesDir = 'locales';
@@ -17,10 +17,10 @@ async function compileLocales() {
         const filePath = path.join(localesDir, file);
         const fileContents = await readFile(filePath, 'utf8');
         const data = yaml.load(fileContents);
-        
+
         const outputFileName = `${path.basename(file, path.extname(file))}.json`;
         const outputFilePath = path.join(outputDir, outputFileName);
-        
+
         await writeFile(outputFilePath, JSON.stringify(data, null, 2));
         console.log(`Compiled ${filePath} to ${outputFilePath}`);
       }
