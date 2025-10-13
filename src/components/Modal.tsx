@@ -34,13 +34,11 @@ const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
         >
           &times;
         </button>
-	<h2 className="text-xl font-bold border-b border-gray-300 py-4 flex-none">
-		{title}
-	</h2>
+        <h2 className="text-xl font-bold border-b border-gray-300 py-4 flex-none">
+          {title}
+        </h2>
 
-	<div className="max-h-full overflow-auto">
-		{children}
-	</div>
+        <div className="max-h-full overflow-auto">{children}</div>
       </div>
     </div>
   );

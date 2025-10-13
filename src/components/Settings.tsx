@@ -3,8 +3,8 @@
 import { useLanguage } from '@/context/LanguageContext';
 import type { CanvasSettings } from '@/context/SettingsContext';
 import { useSettings } from '@/context/SettingsContext';
-import { ShortcutInput } from './ShortcutInput';
 import LanguageSwitcher from './LanguageSwitcher';
+import { ShortcutInput } from './ShortcutInput';
 
 const Settings = () => {
   const { t } = useLanguage();
@@ -45,11 +45,9 @@ const Settings = () => {
   return (
     <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col gap-4 w-full max-w-sm">
       <div className="flex flex-col gap-3">
-        <label className="font-semibold">
-          {t('settings.language')}
-        </label>
+        <label className="font-semibold">{t('settings.language')}</label>
         <div className="flex items-center gap-2">
-	<LanguageSwitcher />
+          <LanguageSwitcher />
         </div>
       </div>
 

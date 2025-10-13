@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef } from 'react';
-import { useSettings } from '@/context/SettingsContext';
 import { useLanguage } from '@/context/LanguageContext';
+import { useSettings } from '@/context/SettingsContext';
 
 interface HeaderProps {
   onExport: () => void;

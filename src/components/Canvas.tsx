@@ -1,6 +1,5 @@
 'use client';
 
-import { useSettings } from '@/context/SettingsContext';
 import {
   forwardRef,
   useEffect,
@@ -8,6 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
+import { useSettings } from '@/context/SettingsContext';
 
 export type Tool = 'pen' | 'eraser';
 
@@ -86,7 +86,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   }, [width, height, pixelSize, gridColor, bgColor, guideImage]);
 
   const getMousePos = (e: React.MouseEvent) => {
-    const rect = canvasRef.current!.getBoundingClientRect();
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 }; // Fallback if canvasRef.current is null
     return {
       x: Math.floor((e.clientX - rect.left) / pixelSize) * pixelSize,
       y: Math.floor((e.clientY - rect.top) / pixelSize) * pixelSize,
@@ -94,7 +95,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   };
 
   const draw = (x: number, y: number) => {
-    const ctx = canvasRef.current!.getContext('2d')!;
+    const ctx = canvasRef.current?.getContext('2d');
+    if (!ctx) return; // Return if context is not available
     if (tool === 'pen') {
       ctx.fillStyle = color;
       ctx.fillRect(x, y, pixelSize, pixelSize);
