@@ -60,3 +60,8 @@ The project's key scripts are defined in `package.json`.
 - **State Management:** Application state is managed locally within components using standard React Hooks (`useState`, `useRef`, `useEffect`, `useContext`). There is no external state management library like Redux.
 - **Typing:** The project is written in **TypeScript** with `strict: true` mode enabled in `tsconfig.json`. All new code should be strongly typed.
 - **Path Aliases:** The alias `@/*` is configured to point to the `src/*` directory for cleaner import paths. For example: `import Canvas from '@/components/Canvas';`.
+
+
+## Users Comments
+
+- DO NOT hardcode texts shown as much as possible. Use locales/**.json and src/context/LanguageContext.tsx ;

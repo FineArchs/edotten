@@ -19,9 +19,10 @@ export interface CanvasSettings {
   shortcuts: {
     pen: string | null;
     eraser: string | null;
-    settings: string | null;
+    openSettings: string | null;
     close: string | null;
   };
+  guideImage: string | null; // Holds the Data URL of the guide image
 }
 
 // Type for the context value, allowing functional updates for setSettings
@@ -45,9 +46,10 @@ const initialSettings: CanvasSettings = {
   shortcuts: {
     pen: 'p',
     eraser: 'e',
-    settings: ',',
+    openSettings: ',',
     close: 'Escape',
   },
+  guideImage: null,
 };
 
 // Provider component

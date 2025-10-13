@@ -1,5 +1,9 @@
+langName: "English"
+
 header:
   settings: "Settings"
+  import: "Import"
+  export: "Export"
 
 tools:
   title: "Tools"
@@ -8,6 +12,7 @@ tools:
 
 settings:
   title: "Settings"
+  language: "Language"
   canvasSize: "Canvas Size"
   pixelSize: "Pixel (Grid) Size"
   gridColor: "Grid Color"
@@ -18,4 +23,8 @@ settings:
     eraser: "Eraser Tool"
     openSettings: "Open Settings"
     close: "Close/Escape"
+    recording: "Press a key..."
+    notSet: "Not set"
+    clear: "Clear"
+    errorInUse: "Key already in use."
   apply: "Apply & Reset Canvas"

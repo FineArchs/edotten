@@ -1,121 +1,131 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import type { Tool } from './ToolSelector';
+import { useSettings } from '@/context/SettingsContext';
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
+
+export type Tool = 'pen' | 'eraser';
 
 interface CanvasProps {
   color: string;
-  width: number;
-  height: number;
-  pixelSize: number;
-  gridColor: string;
-  bgColor: string;
   tool: Tool;
 }
 
-const drawGrid = (
-  ctx: CanvasRenderingContext2D,
-  width: number,
-  height: number,
-  pixelSize: number,
-  gridColor: string,
-) => {
-  ctx.strokeStyle = gridColor;
-  ctx.lineWidth = 0.5;
+export interface CanvasHandle {
+  exportImage: () => void;
+}
 
-  for (let x = 0; x <= width; x += pixelSize) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
-  }
+const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
+  const { settings } = useSettings();
+  const { width, height, pixelSize, gridColor, bgColor, guideImage } = settings;
 
-  for (let y = 0; y <= height; y += pixelSize) {
-    ctx.beginPath();
-    ctx.moveTo(0, y);
-    ctx.lineTo(width, y);
-    ctx.stroke();
-  }
-};
-
-const Canvas = ({
-  color,
-  width,
-  height,
-  pixelSize,
-  gridColor,
-  bgColor,
-  tool,
-}: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const lastPixel = useRef<{ x: number; y: number } | null>(null);
 
-  // Effect for initialization and re-drawing on settings change
+  // Expose export function to parent component
+  useImperativeHandle(ref, () => ({
+    exportImage() {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      const link = document.createElement('a');
+      link.download = 'edotten-artwork.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    },
+  }));
+
+  // Redraw canvas when settings change
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Set fill style for background
-        ctx.fillStyle = bgColor;
-        // Clear canvas with background color
-        ctx.fillRect(0, 0, width, height);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-        // Draw grid
-        drawGrid(ctx, width, height, pixelSize, gridColor);
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
 
-        setContext(ctx);
+    // Draw guide image if it exists
+    if (guideImage) {
+      const image = new Image();
+      image.onload = () => {
+        ctx.globalAlpha = 0.5; // Make guide semi-transparent
+        ctx.drawImage(image, 0, 0, width, height);
+        ctx.globalAlpha = 1.0; // Reset alpha
+        drawGrid(ctx);
+      };
+      image.src = guideImage;
+    } else {
+      // Draw background color
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, width, height);
+      drawGrid(ctx);
+    }
+
+    function drawGrid(context: CanvasRenderingContext2D) {
+      context.strokeStyle = gridColor;
+      context.lineWidth = 1;
+      for (let x = 0; x < width; x += pixelSize) {
+        context.beginPath();
+        context.moveTo(x, 0);
+        context.lineTo(x, height);
+        context.stroke();
+      }
+      for (let y = 0; y < height; y += pixelSize) {
+        context.beginPath();
+        context.moveTo(0, y);
+        context.lineTo(width, y);
+        context.stroke();
       }
     }
-  }, [width, height, pixelSize, gridColor, bgColor]);
+  }, [width, height, pixelSize, gridColor, bgColor, guideImage]);
 
-  // Update fillStyle when color or tool changes
-  useEffect(() => {
-    if (context) {
-      context.fillStyle = tool === 'eraser' ? bgColor : color;
-    }
-  }, [context, tool, color, bgColor]);
-
-  const drawPixel = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!context) return;
-
-    const gridX = Math.floor(event.nativeEvent.offsetX / pixelSize);
-    const gridY = Math.floor(event.nativeEvent.offsetY / pixelSize);
-
-    if (
-      lastPixel.current &&
-      lastPixel.current.x === gridX &&
-      lastPixel.current.y === gridY
-    ) {
-      return;
-    }
-
-    // The fillStyle is already set by the useEffect hook
-    context.fillRect(
-      gridX * pixelSize,
-      gridY * pixelSize,
-      pixelSize,
-      pixelSize,
-    );
-    lastPixel.current = { x: gridX, y: gridY };
+  const getMousePos = (e: React.MouseEvent) => {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    return {
+      x: Math.floor((e.clientX - rect.left) / pixelSize) * pixelSize,
+      y: Math.floor((e.clientY - rect.top) / pixelSize) * pixelSize,
+    };
   };
 
-  const startDrawing = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const draw = (x: number, y: number) => {
+    const ctx = canvasRef.current!.getContext('2d')!;
+    if (tool === 'pen') {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, pixelSize, pixelSize);
+    } else if (tool === 'eraser') {
+      // Redraw the background/grid over the cell
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(x, y, pixelSize, pixelSize);
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x, y, pixelSize, pixelSize);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
     setIsDrawing(true);
-    drawPixel(event);
+    const { x, y } = getMousePos(e);
+    draw(x, y);
   };
 
-  const draw = (event: React.MouseEvent<HTMLCanvasElement>) => {
-    if (isDrawing) {
-      drawPixel(event);
-    }
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDrawing) return;
+    const { x, y } = getMousePos(e);
+    draw(x, y);
   };
 
-  const stopDrawing = () => {
+  const handleMouseUp = () => {
     setIsDrawing(false);
-    lastPixel.current = null;
+  };
+
+  const handleMouseLeave = () => {
+    setIsDrawing(false);
   };
 
   return (
@@ -123,13 +133,15 @@ const Canvas = ({
       ref={canvasRef}
       width={width}
       height={height}
-      onMouseDown={startDrawing}
-      onMouseMove={draw}
-      onMouseUp={stopDrawing}
-      onMouseLeave={stopDrawing}
-      className="border border-gray-400 cursor-crosshair"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      className="bg-white shadow-lg cursor-crosshair"
     />
   );
-};
+});
+
+Canvas.displayName = 'Canvas';
 
 export default Canvas;

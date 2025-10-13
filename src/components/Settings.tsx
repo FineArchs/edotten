@@ -3,6 +3,8 @@
 import { useLanguage } from '@/context/LanguageContext';
 import type { CanvasSettings } from '@/context/SettingsContext';
 import { useSettings } from '@/context/SettingsContext';
+import { ShortcutInput } from './ShortcutInput';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const Settings = () => {
   const { t } = useLanguage();
@@ -16,37 +18,43 @@ const Settings = () => {
     }));
   };
 
-  const handleShortcutChange = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const key = e.key;
-    const name = e.currentTarget.name;
-
+  const handleShortcutChange = (
+    name: keyof CanvasSettings['shortcuts'],
+    value: string | null,
+  ) => {
     setSettings((prev) => ({
       ...prev,
       shortcuts: {
         ...prev.shortcuts,
-        [name]: key,
+        [name]: value,
       },
     }));
   };
 
-  const handleShortcutDelete = (name: keyof CanvasSettings['shortcuts']) => {
-    setSettings((prev) => ({
-      ...prev,
-      shortcuts: {
-        ...prev.shortcuts,
-        [name]: null,
-      },
-    }));
+  const isShortcutUnique = (newKey: string): boolean => {
+    for (const key in settings.shortcuts) {
+      if (
+        settings.shortcuts[key as keyof typeof settings.shortcuts] === newKey
+      ) {
+        return false;
+      }
+    }
+    return true;
   };
 
   return (
-    <div className="p-4 bg-gray-200 rounded-md flex flex-col gap-4 w-full max-w-xs">
-      <h2 className="text-lg font-bold border-b border-gray-400 pb-2">
-        {t('settings.title')}
-      </h2>
+    <div className="p-4 bg-gray-100 rounded-lg shadow-sm flex flex-col gap-4 w-full max-w-sm">
+      <div className="flex flex-col gap-3">
+        <label className="font-semibold">
+          {t('settings.language')}
+        </label>
+        <div className="flex items-center gap-2">
+	<LanguageSwitcher />
+        </div>
+      </div>
 
-      <div className="flex flex-col gap-2">
+      {/* Canvas Settings */}
+      <div className="flex flex-col gap-3">
         <label htmlFor="width" className="font-semibold">
           {t('settings.canvasSize')}
         </label>
@@ -121,96 +129,31 @@ const Settings = () => {
         <h3 className="font-semibold text-lg">
           {t('settings.shortcuts.title')}
         </h3>
-        <div className="flex items-center justify-between">
-          <label htmlFor="shortcut-pen">{t('settings.shortcuts.pen')}</label>
-          <div className="flex items-center gap-2">
-            <input
-              id="shortcut-pen"
-              type="text"
-              name="pen"
-              value={settings.shortcuts.pen || ''}
-              onKeyDown={handleShortcutChange}
-              className="w-24 p-1 border border-gray-300 rounded-md text-center font-mono"
-              readOnly
+        {(
+          Object.keys(settings.shortcuts) as (keyof typeof settings.shortcuts)[]
+        ).map((key) => (
+          <div key={key} className="flex items-center justify-between">
+            <label htmlFor={`shortcut-${key}`}>
+              {t(`settings.shortcuts.${key}`)}
+            </label>
+            <ShortcutInput
+              value={settings.shortcuts[key]}
+              onChange={(value) =>
+                handleShortcutChange(
+                  key as keyof typeof settings.shortcuts,
+                  value,
+                )
+              }
+              onValidate={(newKey) => {
+                // When validating, we must allow the key to be set to itself.
+                const currentKey =
+                  settings.shortcuts[key as keyof typeof settings.shortcuts];
+                if (newKey === currentKey) return true;
+                return isShortcutUnique(newKey);
+              }}
             />
-            <button
-              type="button"
-              onClick={() => handleShortcutDelete('pen')}
-              className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              ❌
-            </button>
           </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <label htmlFor="shortcut-eraser">
-            {t('settings.shortcuts.eraser')}
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              id="shortcut-eraser"
-              type="text"
-              name="eraser"
-              value={settings.shortcuts.eraser || ''}
-              onKeyDown={handleShortcutChange}
-              className="w-24 p-1 border border-gray-300 rounded-md text-center font-mono"
-              readOnly
-            />
-            <button
-              type="button"
-              onClick={() => handleShortcutDelete('eraser')}
-              className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              ❌
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <label htmlFor="shortcut-settings">
-            {t('settings.shortcuts.openSettings')}
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              id="shortcut-settings"
-              type="text"
-              name="settings"
-              value={settings.shortcuts.settings || ''}
-              onKeyDown={handleShortcutChange}
-              className="w-24 p-1 border border-gray-300 rounded-md text-center font-mono"
-              readOnly
-            />
-            <button
-              type="button"
-              onClick={() => handleShortcutDelete('settings')}
-              className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              ❌
-            </button>
-          </div>
-        </div>
-        <div className="flex items-center justify-between">
-          <label htmlFor="shortcut-close">
-            {t('settings.shortcuts.close')}
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              id="shortcut-close"
-              type="text"
-              name="close"
-              value={settings.shortcuts.close || ''}
-              onKeyDown={handleShortcutChange}
-              className="w-24 p-1 border border-gray-300 rounded-md text-center font-mono"
-              readOnly
-            />
-            <button
-              type="button"
-              onClick={() => handleShortcutDelete('close')}
-              className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-            >
-              ❌
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
   );

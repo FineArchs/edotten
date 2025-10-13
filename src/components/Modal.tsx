@@ -6,9 +6,10 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  title: string;
 }
 
-const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+const Modal = ({ isOpen, onClose, children, title }: ModalProps) => {
   if (!isOpen) return null;
 
   return (
@@ -18,7 +19,7 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
     >
       <div
         tabIndex={0}
-        className="bg-white rounded-lg shadow-xl p-6 z-50 relative max-w-md w-full"
+        className="bg-white rounded-lg shadow-xl p-6 pt-0 z-50 flex flex-col relative max-w-md w-full max-h-9/10"
         onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
@@ -33,7 +34,13 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
         >
           &times;
         </button>
-        {children}
+	<h2 className="text-xl font-bold border-b border-gray-300 py-4 flex-none">
+		{title}
+	</h2>
+
+	<div className="max-h-full overflow-auto">
+		{children}
+	</div>
       </div>
     </div>
   );
