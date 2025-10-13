@@ -29,27 +29,31 @@ The project's key scripts are defined in `package.json`.
   ```
 
 - **Run Development Server:**
-  Starts the application on `http://localhost:3000` with hot-reloading.
+  Compiles locales and starts the app on `http://localhost:3000` with hot-reloading.
   ```bash
   pnpm dev
   ```
 
 - **Create Production Build:**
-  Builds the optimized and minified application for deployment.
+  Compiles locales and builds the optimized application for deployment.
   ```bash
   pnpm build
   ```
 
-- **Run Linter & Auto-Fix:**
+- **Run Linter/Formatter**
   Checks for code quality issues and automatically applies safe fixes.
   ```bash
   pnpm lint
+  # autofix
+  pnpm lint --write
+  # autofix(unsafe)
+  pnpm lint --write --unsafe
   ```
 
-- **Format Code:**
-  Formats all source files according to the rules in `biome.json`.
+- **Compile Locales Manually:**
+  Manually triggers the script to convert YAML locale files to JSON and generate TypeScript types. This is automatically run by `dev` and `build` scripts.
   ```bash
-  pnpm format
+  pnpm compile:locales
   ```
 
 ## 3. Development Conventions
@@ -57,10 +61,28 @@ The project's key scripts are defined in `package.json`.
 - **Code Style:** Code formatting and linting are strictly managed by **Biome.js**. The configuration is in `biome.json`, which specifies 2-space indentation and recommended rules for React.
 - **Component Structure:** Reusable React components are located in the `src/components/` directory. Main pages/views are located within the `src/app/` directory.
 - **Styling:** All styling is done using **Tailwind CSS**. Utility classes should be used directly in the JSX. Global styles are minimal and defined in `src/app/globals.css`.
-- **State Management:** Application state is managed locally within components using standard React Hooks (`useState`, `useRef`, `useEffect`, `useContext`). There is no external state management library like Redux.
 - **Typing:** The project is written in **TypeScript** with `strict: true` mode enabled in `tsconfig.json`. All new code should be strongly typed.
 - **Path Aliases:** The alias `@/*` is configured to point to the `src/*` directory for cleaner import paths. For example: `import Canvas from '@/components/Canvas';`.
 
+## 4. Key Features & Implementation Details
+
+### Internationalization (i18n)
+
+The project uses a custom, type-safe i18n pipeline.
+
+1.  **Source:** Language strings are defined in YAML files in `locales/` (e.g., `en.yaml`, `ja.yaml`).
+2.  **Compilation:** The `scripts/compile-locales.mjs` script (run via `pnpm compile:locales`) performs two actions:
+    - It converts each YAML file into a JSON file (`public/locales/*.json`) that can be fetched by the client.
+    - It uses `en.yaml` as the source of truth to generate a TypeScript interface (`src/types/translations-def.autogen.d.ts`), ensuring all translation keys are strongly typed.
+3.  **Usage:** The `LanguageProvider` in `src/context/LanguageContext.tsx` fetches the appropriate JSON file and provides a `useLanguage` hook. This hook exposes a `t` function for translating keys into the current locale's strings.
+
+### State Management
+
+Application state is managed through a combination of local component state and shared context.
+
+- **UI State:** Temporary or local UI state (e.g., whether a modal is open, the currently selected color) is managed within components using `useState`.
+- **Settings Context:** App-wide settings (canvas size, grid color, keyboard shortcuts) are managed via `SettingsContext`. This context also handles persisting these settings to `localStorage`, so they are remembered across sessions.
+- **Language Context:** The current locale and the `t` function for translations are provided by the `LanguageContext`.
 
 ## Users Comments
 
