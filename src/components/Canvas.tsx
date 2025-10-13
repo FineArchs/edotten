@@ -24,46 +24,49 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   const { settings } = useSettings();
   const { width, height, pixelSize, gridColor, bgColor, guideImage } = settings;
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // ▼ ２つのキャンバス参照
+  const drawingCanvasRef = useRef<HTMLCanvasElement>(null);
+  const guideCanvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 
-  // Expose export function to parent component
+  // ===== エクスポート処理 =====
   useImperativeHandle(ref, () => ({
     exportImage() {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+      const drawing = drawingCanvasRef.current;
+      const guide = guideCanvasRef.current;
+      if (!drawing || !guide) return;
 
       const link = document.createElement('a');
       link.download = 'edotten-artwork.png';
-      link.href = canvas.toDataURL('image/png');
+      link.href = drawing.toDataURL('image/png');
       link.click();
     },
   }));
 
-  // Redraw canvas when settings change
+  // ===== ガイドレイヤー描画 =====
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
+    const guideCanvas = guideCanvasRef.current;
+    if (!guideCanvas) return;
+    const ctx = guideCanvas.getContext('2d');
     if (!ctx) return;
 
-    // Clear canvas
     ctx.clearRect(0, 0, width, height);
 
-    // Draw guide image if it exists
+    // 背景色
+    ctx.fillStyle = bgColor;
+    ctx.fillRect(0, 0, width, height);
+
+    // ガイド画像
     if (guideImage) {
       const image = new Image();
       image.onload = () => {
-        ctx.globalAlpha = 0.5; // Make guide semi-transparent
+        ctx.globalAlpha = 0.5;
         ctx.drawImage(image, 0, 0, width, height);
-        ctx.globalAlpha = 1.0; // Reset alpha
+        ctx.globalAlpha = 1.0;
         drawGrid(ctx);
       };
       image.src = guideImage;
     } else {
-      // Draw background color
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(0, 0, width, height);
       drawGrid(ctx);
     }
 
@@ -72,22 +75,23 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
       context.lineWidth = 1;
       for (let x = 0; x < width; x += pixelSize) {
         context.beginPath();
-        context.moveTo(x, 0);
-        context.lineTo(x, height);
+        context.moveTo(x + 0.5, 0);
+        context.lineTo(x + 0.5, height);
         context.stroke();
       }
       for (let y = 0; y < height; y += pixelSize) {
         context.beginPath();
-        context.moveTo(0, y);
-        context.lineTo(width, y);
+        context.moveTo(0, y + 0.5);
+        context.lineTo(width, y + 0.5);
         context.stroke();
       }
     }
   }, [width, height, pixelSize, gridColor, bgColor, guideImage]);
 
+  // ===== ペイントレイヤー処理 =====
   const getMousePos = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return { x: 0, y: 0 }; // Fallback if canvasRef.current is null
+    const rect = drawingCanvasRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
     return {
       x: Math.floor((e.clientX - rect.left) / pixelSize) * pixelSize,
       y: Math.floor((e.clientY - rect.top) / pixelSize) * pixelSize,
@@ -95,18 +99,13 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   };
 
   const draw = (x: number, y: number) => {
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) return; // Return if context is not available
+    const ctx = drawingCanvasRef.current?.getContext('2d');
+    if (!ctx) return;
     if (tool === 'pen') {
       ctx.fillStyle = color;
       ctx.fillRect(x, y, pixelSize, pixelSize);
     } else if (tool === 'eraser') {
-      // Redraw the background/grid over the cell
-      ctx.fillStyle = bgColor;
-      ctx.fillRect(x, y, pixelSize, pixelSize);
-      ctx.strokeStyle = gridColor;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(x, y, pixelSize, pixelSize);
+      ctx.clearRect(x, y, pixelSize, pixelSize);
     }
   };
 
@@ -115,32 +114,53 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
     const { x, y } = getMousePos(e);
     draw(x, y);
   };
-
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDrawing) return;
     const { x, y } = getMousePos(e);
     draw(x, y);
   };
+  const stopDrawing = () => setIsDrawing(false);
 
-  const handleMouseUp = () => {
-    setIsDrawing(false);
-  };
-
-  const handleMouseLeave = () => {
-    setIsDrawing(false);
-  };
-
+  // ===== JSX =====
   return (
-    <canvas
-      ref={canvasRef}
-      width={width}
-      height={height}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      className="bg-white shadow-lg cursor-crosshair"
-    />
+    <div
+      style={{
+        position: 'relative',
+        width,
+        height,
+      }}
+    >
+      {/* ガイドレイヤー（下） */}
+      <canvas
+        ref={guideCanvasRef}
+        width={width}
+        height={height}
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          zIndex: 0,
+        }}
+      />
+
+      {/* 描画レイヤー（上） */}
+      <canvas
+        ref={drawingCanvasRef}
+        width={width}
+        height={height}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
+        className="bg-transparent cursor-crosshair"
+        style={{
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          zIndex: 1,
+        }}
+      />
+    </div>
   );
 });
 

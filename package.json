@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "compile:locales": "node scripts/compile-locales.mjs",
-    "dev": "pnpm run compile:locales && next dev --turbopack",
+    "dev": "pnpm run compile:locales && next dev",
     "build": "pnpm run compile:locales && next build --turbopack",
     "start": "next start",
     "lint": "biome check",
