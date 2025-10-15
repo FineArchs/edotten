@@ -8,6 +8,7 @@ export type DrawingLayerProps = LayerCommonProps & {
   color: string;
   tool: Tool;
   pixelSize: number;
+  isActive: boolean;
   ref?: Ref<DrawingLayerHandle>;
 };
 
@@ -23,6 +24,7 @@ function DrawingLayer({
   color,
   tool,
   pixelSize,
+  isActive,
   ref,
 }: DrawingLayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,6 +59,7 @@ function DrawingLayer({
   };
 
   const startDrawing = (e: React.MouseEvent) => {
+    if (!isActive) return;
     setIsDrawing(true);
     const { x, y } = getMousePos(e);
     draw(x, y);
@@ -83,7 +86,7 @@ function DrawingLayer({
         left: 0,
         opacity: visible ? opacity : 0,
         cursor: 'crosshair',
-        zIndex: 3,
+        zIndex: 3, // TODO: zIndex should be dynamic based on layer order
       }}
     />
   );
