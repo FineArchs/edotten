@@ -10,6 +10,10 @@ tools:
   pen: "Pen"
   eraser: "Eraser"
 
+layerManager:
+  title: "Layers"
+  addLayer: "Add New Layer"
+
 settings:
   title: "Settings"
   language: "Language"

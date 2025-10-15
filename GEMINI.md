@@ -87,3 +87,4 @@ Application state is managed through a combination of local component state and 
 ## Users Comments
 
 - DO NOT hardcode texts shown as much as possible. Use locales/**.json and src/context/LanguageContext.tsx ;
+- replace tool is buggy with editor, use write_file tool instead.

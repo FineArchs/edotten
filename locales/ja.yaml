@@ -10,6 +10,10 @@ tools:
   pen: "ペン"
   eraser: "消しゴム"
 
+layerManager:
+  title: "レイヤー"
+  addLayer: "新規レイヤーを追加"
+
 settings:
   title: "設定"
   language: "言語"
