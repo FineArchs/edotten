@@ -1,13 +1,8 @@
 'use client';
 
-import {
-  useImperativeHandle,
-  useRef,
-  useState,
-  type Ref,
-} from 'react';
-import type { LayerCommonProps } from './common';
+import { type Ref, useImperativeHandle, useRef, useState } from 'react';
 import type { Tool } from '../Canvas';
+import type { LayerCommonProps } from './common';
 
 export type DrawingLayerProps = LayerCommonProps & {
   color: string;
@@ -20,18 +15,16 @@ export interface DrawingLayerHandle {
   drawOn: (context: CanvasRenderingContext2D) => void;
 }
 
-function DrawingLayer(
-  {
-    visible,
-    opacity,
-    width,
-    height,
-    color,
-    tool,
-    pixelSize,
-    ref,
-  }: DrawingLayerProps,
-) {
+function DrawingLayer({
+  visible,
+  opacity,
+  width,
+  height,
+  color,
+  tool,
+  pixelSize,
+  ref,
+}: DrawingLayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
 

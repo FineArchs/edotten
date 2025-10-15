@@ -1,6 +1,6 @@
 'use client';
 
-import { useImperativeHandle, type Ref } from 'react';
+import { type Ref, useImperativeHandle } from 'react';
 import type { LayerCommonProps } from './common';
 
 export type GuideLayerProps = LayerCommonProps & {
@@ -12,9 +12,14 @@ export interface GuideLayerHandle {
   drawOn: (context: CanvasRenderingContext2D) => void;
 }
 
-function GuideLayer(
-  { width, height, visible, opacity, src, ref }: GuideLayerProps,
-) {
+function GuideLayer({
+  width,
+  height,
+  visible,
+  opacity,
+  src,
+  ref,
+}: GuideLayerProps) {
   useImperativeHandle(ref, () => ({
     drawOn() {
       // 何もしない（エクスポートに含めないため）

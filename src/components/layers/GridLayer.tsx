@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
+import { type Ref, useEffect, useImperativeHandle, useRef } from 'react';
 import type { LayerCommonProps } from './common';
 
 export type GridLayerProps = LayerCommonProps & {
@@ -13,9 +13,15 @@ export interface GridLayerHandle {
   drawOn: (context: CanvasRenderingContext2D) => void;
 }
 
-function GridLayer(
-  { width, height, visible, opacity, pixelSize, gridColor, ref }: GridLayerProps,
-) {
+function GridLayer({
+  width,
+  height,
+  visible,
+  opacity,
+  pixelSize,
+  gridColor,
+  ref,
+}: GridLayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useImperativeHandle(ref, () => ({

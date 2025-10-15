@@ -1,6 +1,6 @@
 export type LayerCommonProps = {
-	width: number;
-	height: number;
-	visible: boolean;
-	opacity: number;
+  width: number;
+  height: number;
+  visible: boolean;
+  opacity: number;
 };

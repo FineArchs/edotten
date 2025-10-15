@@ -1,8 +1,14 @@
 'use client';
 
+import {
+  createRef,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from 'react';
 import { useSettings } from '@/context/SettingsContext';
-import Layer, { type LayerHandle, type LayerProps } from './layers/Layer';
-import { forwardRef, useImperativeHandle, useRef, useState, createRef, useEffect } from 'react';
+import Layer, { type LayerProps } from './layers/Layer';
 
 export type Tool = 'pen' | 'eraser';
 
@@ -20,7 +26,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   const { width, height, pixelSize, gridColor, bgColor, guideImage } = settings;
 
   // レイヤーのデータ構造。LayerPropsにidを追加した形。
-  const [layers, setLayers] = useState<(LayerProps)[]>([
+  const [layers, setLayers] = useState<LayerProps[]>([
     {
       id: 'guide-1',
       kind: 'guide',
@@ -63,8 +69,8 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
   ]);
 
   useEffect(() => {
-    setLayers(prevLayers =>
-      prevLayers.map(layer => {
+    setLayers((prevLayers) =>
+      prevLayers.map((layer) => {
         if (layer.kind === 'guide') {
           return {
             ...layer,
@@ -97,7 +103,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
       context.fillRect(0, 0, width, height);
 
       // 2. 各レイヤーを描画する
-      layers.forEach(layer => {
+      layers.forEach((layer) => {
         layer.componentRef?.current?.drawOn(context);
       });
 
@@ -118,7 +124,7 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(({ color, tool }, ref) => {
         backgroundColor: bgColor,
       }}
     >
-      {layers.map(layer => (
+      {layers.map((layer) => (
         <Layer key={layer.id} {...layer} />
       ))}
     </div>
