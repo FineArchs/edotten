@@ -1,16 +1,14 @@
 'use client';
 
 import { type Ref, useImperativeHandle } from 'react';
-import type { LayerCommonProps } from './common';
+import type { LayerCommonProps, LayerCommonHandles } from './common';
 
 export type GuideLayerProps = LayerCommonProps & {
   src?: string | null;
   ref?: Ref<GuideLayerHandle>;
 };
 
-export interface GuideLayerHandle {
-  drawOn: (context: CanvasRenderingContext2D) => void;
-}
+export type GuideLayerHandle = LayerCommonHandles;
 
 function GuideLayer({
   width,

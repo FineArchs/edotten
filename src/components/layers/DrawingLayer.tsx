@@ -2,7 +2,7 @@
 
 import { type Ref, useImperativeHandle, useRef } from 'react';
 import type { Tool } from '../Canvas';
-import type { LayerCommonProps } from './common';
+import type { LayerCommonProps, LayerCommonHandles } from './common';
 
 export type DrawingLayerProps = LayerCommonProps & {
   color: string;
@@ -12,8 +12,7 @@ export type DrawingLayerProps = LayerCommonProps & {
   ref?: Ref<DrawingLayerHandle>;
 };
 
-export interface DrawingLayerHandle {
-  drawOn: (context: CanvasRenderingContext2D) => void;
+export type DrawingLayerHandle = LayerCommonHandles & {
   draw: (x: number, y: number) => void;
 }
 

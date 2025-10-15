@@ -5,3 +5,7 @@ export type LayerCommonProps = {
   opacity: number;
   zIndex: number;
 };
+
+export type LayerCommonHandles = {
+  drawOn: (context: CanvasRenderingContext2D) => void;
+};
