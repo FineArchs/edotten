@@ -20,6 +20,7 @@ function GridLayer({
   opacity,
   pixelSize,
   gridColor,
+  zIndex,
   ref,
 }: GridLayerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -65,7 +66,7 @@ function GridLayer({
         left: 0,
         opacity: visible ? opacity : 0,
         pointerEvents: 'none',
-        zIndex: 2,
+        zIndex: zIndex,
       }}
     />
   );

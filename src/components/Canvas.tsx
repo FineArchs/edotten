@@ -2,21 +2,20 @@
 
 import {
   forwardRef,
-  useEffect,
   useImperativeHandle,
-  type Dispatch,
-  type SetStateAction,
+  useRef,
+  useState,
+  type MouseEvent,
 } from 'react';
 import { useSettings } from '@/context/SettingsContext';
 import Layer, { type LayerProps } from './layers/Layer';
+import type { DrawingLayerHandle } from './layers/DrawingLayer';
 
 export type Tool = 'pen' | 'eraser';
 
 interface CanvasProps {
-  color: string;
-  tool: Tool;
   layers: LayerProps[];
-  setLayers: Dispatch<SetStateAction<LayerProps[]>>;
+  activeLayerId: string;
 }
 
 export interface CanvasHandle {
@@ -24,47 +23,46 @@ export interface CanvasHandle {
 }
 
 const Canvas = forwardRef<CanvasHandle, CanvasProps>(
-  ({ color, tool, layers, setLayers }, ref) => {
+  ({ layers, activeLayerId }, ref) => {
     const { settings } = useSettings();
-    const { width, height, pixelSize, gridColor, bgColor, guideImage } = settings;
+    const { width, height, pixelSize, bgColor } = settings;
+    const [isDrawing, setIsDrawing] = useState(false);
+    const interactionCanvasRef = useRef<HTMLCanvasElement>(null);
 
-    // Effect to update guide image layer
-    useEffect(() => {
-      setLayers((prevLayers) =>
-        prevLayers.map((layer) => {
-          if (layer.kind === 'guide') {
-            return {
-              ...layer,
-              props: {
-                ...layer.props,
-                src: guideImage,
-                visible: guideImage != null,
-              },
-            };
-          }
-          return layer;
-        }),
-      );
-    }, [guideImage, setLayers]);
+    const getMousePos = (e: MouseEvent) => {
+      const rect = interactionCanvasRef.current?.getBoundingClientRect();
+      if (!rect) return { x: 0, y: 0 };
+      return {
+        x: Math.floor((e.clientX - rect.left) / pixelSize),
+        y: Math.floor((e.clientY - rect.top) / pixelSize),
+      };
+    };
 
-    // Effect to update drawing layers with current tool and color
-    useEffect(() => {
-      setLayers((prevLayers) =>
-        prevLayers.map((layer) => {
-          if (layer.kind === 'drawing') {
-            return {
-              ...layer,
-              props: {
-                ...layer.props,
-                color,
-                tool,
-              },
-            };
-          }
-          return layer;
-        }),
+    const drawOnActiveLayer = (x: number, y: number) => {
+      const activeLayer = layers.find(
+        (l) => l.id === activeLayerId && l.kind === 'drawing',
       );
-    }, [color, tool, setLayers]);
+      if (activeLayer) {
+        const handle = activeLayer.componentRef?.current as DrawingLayerHandle;
+        handle?.draw(x * pixelSize, y * pixelSize);
+      }
+    };
+
+    const startDrawing = (e: MouseEvent) => {
+      setIsDrawing(true);
+      const { x, y } = getMousePos(e);
+      drawOnActiveLayer(x, y);
+    };
+
+    const moveDrawing = (e: MouseEvent) => {
+      if (!isDrawing) return;
+      const { x, y } = getMousePos(e);
+      drawOnActiveLayer(x, y);
+    };
+
+    const stopDrawing = () => {
+      setIsDrawing(false);
+    };
 
     useImperativeHandle(ref, () => ({
       exportImage() {
@@ -78,16 +76,13 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           return;
         }
 
-        // 1. Fill background
         context.fillStyle = bgColor;
         context.fillRect(0, 0, width, height);
 
-        // 2. Draw each layer
         layers.forEach((layer) => {
           layer.componentRef?.current?.drawOn(context);
         });
 
-        // 3. Download image
         const link = document.createElement('a');
         link.download = 'edotten-artwork.png';
         link.href = canvas.toDataURL('image/png');
@@ -104,9 +99,54 @@ const Canvas = forwardRef<CanvasHandle, CanvasProps>(
           backgroundColor: bgColor,
         }}
       >
-        {layers.map((layer) => (
-          <Layer key={layer.id} {...layer} />
-        ))}
+        {layers.map((layer, index) => {
+          let layerWithZIndex: LayerProps;
+          switch (layer.kind) {
+            case 'drawing':
+              layerWithZIndex = {
+                ...layer,
+                props: { ...layer.props, zIndex: index },
+              };
+              break;
+            case 'guide':
+              layerWithZIndex = {
+                ...layer,
+                props: { ...layer.props, zIndex: index },
+              };
+              break;
+            case 'grid':
+              layerWithZIndex = {
+                ...layer,
+                props: { ...layer.props, zIndex: index },
+              };
+              break;
+            default:
+              layerWithZIndex = layer; // Should not happen
+          }
+          return <Layer key={layer.id} {...layerWithZIndex} />;
+        })}
+
+        {/*
+          This canvas is for capturing mouse events.
+          Using a canvas instead of a div allows for potential future extensions,
+          such as drawing custom cursor previews (e.g., pen size).
+        */}
+        <canvas
+          ref={interactionCanvasRef}
+          width={width}
+          height={height}
+          onMouseDown={startDrawing}
+          onMouseMove={moveDrawing}
+          onMouseUp={stopDrawing}
+          onMouseLeave={stopDrawing}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            cursor: 'crosshair',
+            zIndex: layers.length, // Always on top
+          }}
+        />
       </div>
     );
   },

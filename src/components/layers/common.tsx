@@ -3,4 +3,5 @@ export type LayerCommonProps = {
   height: number;
   visible: boolean;
   opacity: number;
+  zIndex: number;
 };

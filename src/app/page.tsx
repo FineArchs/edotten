@@ -15,6 +15,7 @@ import { useKeyPress } from '@/hooks/useKeyPress';
 
 export default function Home() {
   const { settings } = useSettings();
+  const { guideImage } = settings;
   const { t } = useLanguage();
   const canvasRef = useRef<CanvasHandle>(null);
 
@@ -37,6 +38,7 @@ export default function Home() {
           visible: guideImage != null,
           opacity: 0.5,
           src: guideImage,
+          zIndex: 0,
         },
       },
       {
@@ -50,6 +52,7 @@ export default function Home() {
           opacity: 1,
           pixelSize,
           gridColor,
+          zIndex: 1,
         },
       },
       {
@@ -64,7 +67,8 @@ export default function Home() {
           color: '#000000',
           tool: 'pen',
           pixelSize,
-          isActive: true, // Still needed for initial state
+          isActive: true,
+          zIndex: 2,
         },
       },
     ];
@@ -77,7 +81,7 @@ export default function Home() {
       id: crypto.randomUUID(),
       kind: 'drawing',
       componentRef: createRef(),
-      props: { width, height, visible: true, opacity: 1, color, tool, pixelSize, isActive: false },
+      props: { width, height, visible: true, opacity: 1, color, tool, pixelSize, isActive: false, zIndex: layers.length },
     };
     setLayers(prev => {
       const gridIndex = prev.findIndex(l => l.kind === 'grid');
@@ -95,12 +99,11 @@ export default function Home() {
       return;
     }
 
-    const layerIndex = layers.findIndex(l => l.id === id);
     setLayers(prev => prev.filter(l => l.id !== id));
 
     if (activeLayerId === id) {
-      const drawingLayerIndex = drawingLayers.findIndex(l => l.id === id);
-      const newActiveLayer = drawingLayers[drawingLayerIndex - 1] ?? drawingLayers.find(l => l.id !== id);
+      const layerIndex = drawingLayers.findIndex(l => l.id === id);
+      const newActiveLayer = drawingLayers[layerIndex - 1] ?? drawingLayers.find(l => l.id !== id);
       if (newActiveLayer) {
         setActiveLayerId(newActiveLayer.id);
       }
@@ -121,22 +124,33 @@ export default function Home() {
     );
   };
 
-  // --- Effects ---
+  // --- Effects to sync props into layers state ---
   useEffect(() => {
-    setLayers(prevLayers =>
-      prevLayers.map((l): LayerProps => {
-        if (l.kind !== 'drawing') {
-          return l;
-        }
-        const isActive = l.id === activeLayerId;
-        if (l.props.isActive === isActive) {
-          return l;
-        }
-        return { ...l, props: { ...l.props, isActive } };
+    setLayers(prev =>
+      prev.map((l): LayerProps => {
+        if (l.kind !== 'drawing') return l;
+        return { ...l, props: { ...l.props, isActive: l.id === activeLayerId } };
       })
     );
   }, [activeLayerId, setLayers]);
 
+  useEffect(() => {
+    setLayers(prev =>
+      prev.map((l): LayerProps => {
+        if (l.kind !== 'guide') return l;
+        return { ...l, props: { ...l.props, src: guideImage, visible: guideImage != null } };
+      })
+    );
+  }, [guideImage, setLayers]);
+
+  useEffect(() => {
+    setLayers(prev =>
+      prev.map((l): LayerProps => {
+        if (l.kind !== 'drawing') return l;
+        return { ...l, props: { ...l.props, color, tool } };
+      })
+    );
+  }, [color, tool, setLayers]);
 
   // --- Keyboard Shortcuts ---
   useKeyPress(settings.shortcuts.pen, () => setTool('pen'), !isSettingsOpen);
@@ -170,10 +184,8 @@ export default function Home() {
         <main className="flex-1 flex items-center justify-center p-4 bg-gray-200 overflow-auto">
           <Canvas
             ref={canvasRef}
-            color={color}
-            tool={tool}
             layers={layers}
-            setLayers={setLayers}
+            activeLayerId={activeLayerId}
           />
         </main>
       </div>

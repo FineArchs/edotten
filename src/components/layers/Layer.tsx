@@ -21,20 +21,23 @@ export type LayerHandle =
 // Layerコンポーネントが受け取るPropsの型
 export type LayerProps = {
   id: string;
-  componentRef?: RefObject<LayerHandle | null>;
 } & (
-  | { kind: 'drawing'; props: DrawingLayerProps }
-  | { kind: 'guide'; props: GuideLayerProps }
-  | { kind: 'grid'; props: GridLayerProps }
+  | { kind: 'drawing'; props: DrawingLayerProps; componentRef?: RefObject<DrawingLayerHandle | null>; }
+  | { kind: 'guide'; props: GuideLayerProps; componentRef?: RefObject<GuideLayerHandle | null>; }
+  | { kind: 'grid'; props: GridLayerProps; componentRef?: RefObject<GridLayerHandle | null>; }
 );
 
-export default function Layer(props: LayerProps) {
-  switch (props.kind) {
-    case 'drawing':
-      return <DrawingLayer {...props.props} ref={props.componentRef} />;
-    case 'guide':
-      return <GuideLayer {...props.props} ref={props.componentRef} />;
-    case 'grid':
-      return <GridLayer {...props.props} ref={props.componentRef} />;
+export default function Layer({ id, kind, props, componentRef }: LayerProps) {
+  switch (kind) {
+    case 'drawing': {
+      return <DrawingLayer {...props}  ref={componentRef} />;
+    }
+    case 'guide': {
+      return <GuideLayer {...props} ref={componentRef} />;
+    }
+    case 'grid': {
+      const { zIndex, ...restProps } = props;
+      return <GridLayer {...props} ref={componentRef} />;
+    }
   }
 }

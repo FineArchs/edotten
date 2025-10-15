@@ -18,6 +18,7 @@ function GuideLayer({
   visible,
   opacity,
   src,
+  zIndex,
   ref,
 }: GuideLayerProps) {
   useImperativeHandle(ref, () => ({
@@ -40,7 +41,7 @@ function GuideLayer({
         left: 0,
         opacity: visible ? opacity : 0,
         pointerEvents: 'none',
-        zIndex: 1,
+        zIndex: zIndex,
         imageRendering: 'pixelated',
       }}
     />
